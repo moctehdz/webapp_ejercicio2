@@ -391,15 +391,32 @@
             let ingredients = [];
             let totalIngredientsCost = 0;
             
-            // Comprobar si hay datos guardados en el almacenamiento local
-            const savedIngredients = localStorage.getItem('darkKitchenIngredients');
-            if (savedIngredients) {
+            // Función para verificar si localStorage está disponible
+            function isLocalStorageAvailable() {
                 try {
-                    ingredients = JSON.parse(savedIngredients);
-                    updateIngredientsList();
+                    const test = '__test__';
+                    localStorage.setItem(test, test);
+                    localStorage.removeItem(test);
+                    return true;
                 } catch (e) {
-                    console.error('Error al cargar ingredientes guardados:', e);
-                    localStorage.removeItem('darkKitchenIngredients');
+                    return false;
+                }
+            }
+            
+            // Variable para indicar si localStorage está disponible
+            const localStorageAvailable = isLocalStorageAvailable();
+            
+            // Intentar cargar datos guardados solo si localStorage está disponible
+            if (localStorageAvailable) {
+                const savedIngredients = localStorage.getItem('darkKitchenIngredients');
+                if (savedIngredients) {
+                    try {
+                        ingredients = JSON.parse(savedIngredients);
+                        updateIngredientsList();
+                    } catch (e) {
+                        console.error('Error al cargar ingredientes guardados:', e);
+                        localStorage.removeItem('darkKitchenIngredients');
+                    }
                 }
             }
             
@@ -476,11 +493,13 @@
                 // Agregar a la lista de ingredientes
                 ingredients.push(ingredient);
                 
-                // Guardar en localStorage
-                try {
-                    localStorage.setItem('darkKitchenIngredients', JSON.stringify(ingredients));
-                } catch (e) {
-                    console.warn('No se pudo guardar en localStorage:', e);
+                // Guardar en localStorage si está disponible
+                if (localStorageAvailable) {
+                    try {
+                        localStorage.setItem('darkKitchenIngredients', JSON.stringify(ingredients));
+                    } catch (e) {
+                        console.warn('No se pudo guardar en localStorage:', e);
+                    }
                 }
                 
                 // Actualizar la interfaz
