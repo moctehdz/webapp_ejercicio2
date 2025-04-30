@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Precio - Dark Kitchen</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Animate.css -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #FF5733;
+            --secondary-color: #33B5FF;
+            --dark-color: #333;
+            --light-color: #f8f9fa;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), #ff8c66);
+            color: white;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            font-weight: 700;
+        }
+        
+        .main-container {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: #e24a28;
+            border-color: #e24a28;
+        }
+        
+        .btn-outline-primary {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .card {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-header {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: bold;
+            padding: 15px;
+        }
+        
+        .ingredient-item {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .result-highlight {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+        
+        .input-group-text {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .footer {
+            background-color: var(--dark-color);
+            color: white;
+            padding: 20px 0;
+            border-radius: 20px 20px 0 0;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(255, 87, 51, 0.25);
+        }
+        
+        #resultCard {
+            display: none;
+        }
+        
+        #imageContainer {
+            width: 100%;
+            height: 300px;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #generatedImage {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 10px;
+        }
+        
+        .loading-spinner {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .price-circle {
+            width: 150px;
+            height: 150px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin: 0 auto;
+            box-shadow: 0 4px 15px rgba(255, 87, 51, 0.5);
+        }
+        
+        .price-label {
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        
+        .price-value {
+            font-size: 28px;
+        }
+        
+        .section-divider {
+            height: 2px;
+            background: linear-gradient(to right, transparent, var(--primary-color), transparent);
+            margin: 30px 0;
+        }
+
+        .profit-bar-container {
+            height: 25px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .profit-bar {
+            height: 100%;
+            background-color: var(--primary-color);
+            width: 0%;
+            transition: width 1.5s ease;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+            line-height: 25px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+    <header class="header animate__animated animate__fadeIn">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1><i class="fas fa-utensils me-2"></i> Calculadora de Precios</h1>
+                    <p class="mb-0">Calcula el precio óptimo para los platillos de tu Dark Kitchen</p>
+                </div>
+                <div class="col-md-4 text-end d-none d-md-block">
+                    <i class="fas fa-calculator fa-3x"></i>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="main-container animate__animated animate__fadeInUp">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <i class="fas fa-carrot me-2"></i> Ingredientes del Platillo
+                        </div>
+                        <div class="card-body">
+                            <form id="ingredientForm">
+                                <div class="mb-3">
+                                    <label for="ingredientName" class="form-label">Nombre del Ingrediente</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-tag"></i></span>
+                                        <input type="text" class="form-control" id="ingredientName" placeholder="Ej: Tomate" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="ingredientCost" class="form-label">Costo del Ingrediente (MXN)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" id="ingredientCost" min="0" step="0.01" placeholder="0.00" required>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-plus-circle me-2"></i> Agregar Ingrediente
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-file-invoice-dollar me-2"></i> Costos Adicionales
+                        </div>
+                        <div class="card-body">
+                            <form id="costsForm">
+                                <div class="mb-3">
+                                    <label for="indirectCosts" class="form-label">Costos Indirectos (MXN)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-bolt"></i></span>
+                                        <input type="number" class="form-control" id="indirectCosts" min="0" step="0.01" placeholder="Luz, gas, etc." required>
+                                    </div>
+                                    <small class="text-muted">Incluye luz, agua, gas, etc.</small>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="marketingCosts" class="form-label">Costos de Comercialización (MXN)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-ad"></i></span>
+                                        <input type="number" class="form-control" id="marketingCosts" min="0" step="0.01" placeholder="Publicidad, comisiones..." required>
+                                    </div>
+                                    <small class="text-muted">Incluye publicidad, comisiones, etc.</small>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="profitMargin" class="form-label">Margen de Ganancia Deseado (%)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-percentage"></i></span>
+                                        <input type="number" class="form-control" id="profitMargin" min="1" max="100" placeholder="Ej: 30" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="dishName" class="form-label">Nombre del Platillo</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-utensil-spoon"></i></span>
+                                        <input type="text" class="form-control" id="dishName" placeholder="Ej: Pasta Alfredo" required>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <i class="fas fa-list me-2"></i> Ingredientes Agregados
+                        </div>
+                        <div class="card-body">
+                            <div id="ingredientsList" class="mb-3">
+                                <div class="text-center text-muted py-4">
+                                    <i class="fas fa-shopping-basket fa-3x mb-3"></i>
+                                    <p>Aún no has agregado ingredientes</p>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <p class="mb-0"><strong>Total Ingredientes:</strong> <span id="ingredientsTotal">$0.00</span></p>
+                                <button id="clearIngredients" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-trash me-1"></i> Limpiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button id="calculateButton" class="btn btn-primary btn-lg w-100 mb-4">
+                        <i class="fas fa-calculator me-2"></i> Calcular Precio Final
+                    </button>
+
+                    <div id="resultCard" class="card animate__animated">
+                        <div class="card-header">
+                            <i class="fas fa-chart-line me-2"></i> Resultado del Cálculo
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center mb-4">
+                                <h4 id="resultDishName" class="mb-3">Nombre del Platillo</h4>
+                                <div class="price-circle animate__animated animate__bounceIn">
+                                    <div class="price-label">Precio Sugerido</div>
+                                    <div class="price-value" id="finalPrice">$0.00</div>
+                                </div>
+                            </div>
+
+                            <div class="section-divider"></div>
+
+                            <h5 class="mb-3"><i class="fas fa-chart-pie me-2"></i> Desglose de Costos</h5>
+                            <div class="row">
+                                <div class="col-6">
+                                    <p><strong>Costo Ingredientes:</strong></p>
+                                    <p><strong>Costos Indirectos:</strong></p>
+                                    <p><strong>Costos Marketing:</strong></p>
+                                    <p><strong>Costo Total:</strong></p>
+                                    <p><strong>Ganancia:</strong></p>
+                                </div>
+                                <div class="col-6 text-end">
+                                    <p id="resultIngredients">$0.00</p>
+                                    <p id="resultIndirect">$0.00</p>
+                                    <p id="resultMarketing">$0.00</p>
+                                    <p id="resultTotalCost">$0.00</p>
+                                    <p id="resultProfit" class="text-success">$0.00</p>
+                                </div>
+                            </div>
+
+                            <div class="mt-3">
+                                <p><strong>Margen de Ganancia:</strong> <span id="resultMarginPercentage">0%</span></p>
+                                <div class="profit-bar-container">
+                                    <div class="profit-bar" id="profitBar">0%</div>
+                                </div>
+                            </div>
+
+                            <div class="section-divider"></div>
+
+                            <h5 class="mb-3"><i class="fas fa-image me-2"></i> Imagen del Platillo</h5>
+                            <div id="imageContainer" class="mb-3">
+                                <div class="loading-spinner" id="imageSpinner">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Generando imagen...</span>
+                                    </div>
+                                </div>
+                                <img id="generatedImage" src="" alt="Imagen del platillo" style="display: none;">
+                            </div>
+
+                            <div class="d-grid">
+                                <button id="newCalculation" class="btn btn-outline-primary">
+                                    <i class="fas fa-redo-alt me-2"></i> Nueva Calculación
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer text-center mb-4">
+            <div class="container">
+                <p class="mb-0">&copy; 2025 Calculadora para Dark Kitchen | Diseñado para emprendedores gastronómicos</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle with Popper -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Variables globales
+            let ingredients = [];
+            let totalIngredientsCost = 0;
+            
+            // Comprobar si hay datos guardados en el almacenamiento local
+            const savedIngredients = localStorage.getItem('darkKitchenIngredients');
+            if (savedIngredients) {
+                try {
+                    ingredients = JSON.parse(savedIngredients);
+                    updateIngredientsList();
+                } catch (e) {
+                    console.error('Error al cargar ingredientes guardados:', e);
+                    localStorage.removeItem('darkKitchenIngredients');
+                }
+            }
+            
+            // Referencias a elementos del DOM
+            const ingredientForm = document.getElementById('ingredientForm');
+            const ingredientsList = document.getElementById('ingredientsList');
+            const ingredientsTotal = document.getElementById('ingredientsTotal');
+            const clearIngredientsBtn = document.getElementById('clearIngredients');
+            const calculateBtn = document.getElementById('calculateButton');
+            const resultCard = document.getElementById('resultCard');
+            const newCalculationBtn = document.getElementById('newCalculation');
+            
+            // Manejador para agregar ingredientes
+            ingredientForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const nameInput = document.getElementById('ingredientName');
+                const costInput = document.getElementById('ingredientCost');
+                
+                const name = nameInput.value.trim();
+                const cost = parseFloat(costInput.value);
+                
+                // Validar campos
+                if (!name) {
+                    nameInput.classList.add('is-invalid');
+                    setTimeout(() => nameInput.classList.remove('is-invalid'), 3000);
+                    nameInput.focus();
+                    return;
+                }
+                
+                if (isNaN(cost) || cost < 0) {
+                    costInput.classList.add('is-invalid');
+                    setTimeout(() => costInput.classList.remove('is-invalid'), 3000);
+                    costInput.focus();
+                    return;
+                }
+                
+                // Agregar ingrediente a la lista
+                addIngredient(name, cost);
+                
+                // Limpiar el formulario
+                ingredientForm.reset();
+                nameInput.focus();
+                
+                // Mostrar feedback de éxito
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-success animate__animated animate__fadeIn py-2 mt-2';
+                alertDiv.textContent = `¡${name} agregado correctamente!`;
+                ingredientForm.appendChild(alertDiv);
+                
+                // Eliminar alerta después de 2 segundos
+                setTimeout(() => {
+                    alertDiv.classList.remove('animate__fadeIn');
+                    alertDiv.classList.add('animate__fadeOut');
+                    setTimeout(() => alertDiv.remove(), 500);
+                }, 1500);
+            });
+            
+            // Función para agregar un ingrediente
+            function addIngredient(name, cost) {
+                // Validar datos de nuevo para seguridad
+                if (!name.trim() || isNaN(cost) || cost < 0) {
+                    console.error('Datos de ingrediente inválidos:', { name, cost });
+                    return false;
+                }
+                
+                // Crear objeto de ingrediente
+                const ingredient = {
+                    id: Date.now(),
+                    name: name.trim(),
+                    cost: parseFloat(cost)
+                };
+                
+                // Agregar a la lista de ingredientes
+                ingredients.push(ingredient);
+                
+                // Guardar en localStorage
+                try {
+                    localStorage.setItem('darkKitchenIngredients', JSON.stringify(ingredients));
+                } catch (e) {
+                    console.warn('No se pudo guardar en localStorage:', e);
+                }
+                
+                // Actualizar la interfaz
+                updateIngredientsList();
+                return true;
+            }
+            
+            // Función para actualizar la lista de ingredientes en la UI
+            function updateIngredientsList() {
+                // Limpiar la lista actual
+                if (ingredients.length === 0) {
+                    ingredientsList.innerHTML = `
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-shopping-basket fa-3x mb-3"></i>
+                            <p>Aún no has agregado ingredientes</p>
+                        </div>
+                    `;
+                    ingredientsTotal.textContent = '$0.00';
+                    return;
+                }
+                
+                ingredientsList.innerHTML = '';
+                totalIngredientsCost = 0;
+                
+                // Ordenar ingredientes por fecha de adición (más reciente primero)
+                const sortedIngredients = [...ingredients].sort((a, b) => b.id - a.id);
+                
+                // Agregar cada ingrediente a la lista
+                sortedIngredients.forEach(ingredient => {
+                    // Asegurarse de que el costo sea un número
+                    const cost = parseFloat(ingredient.cost);
+                    if (!isNaN(cost)) {
+                        totalIngredientsCost += cost;
+                    }
+                    
+                    const ingredientEl = document.createElement('div');
+                    ingredientEl.className = 'ingredient-item animate__animated animate__fadeIn';
+                    ingredientEl.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>${ingredient.name}</strong>
+                                <div class="text-muted small">${parseFloat(ingredient.cost).toFixed(2)}</div>
+                            </div>
+                            <button class="btn btn-sm btn-outline-danger delete-ingredient" data-id="${ingredient.id}">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    `;
+                    
+                    ingredientsList.appendChild(ingredientEl);
+                });
+                
+                // Actualizar el total
+                ingredientsTotal.textContent = `${totalIngredientsCost.toFixed(2)}`;
+                
+                // Habilitar o deshabilitar el botón de cálculo según si hay ingredientes
+                calculateBtn.disabled = ingredients.length === 0;
+                
+                // Agregar event listeners para eliminar ingredientes
+                document.querySelectorAll('.delete-ingredient').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const id = parseInt(this.getAttribute('data-id'));
+                        removeIngredient(id);
+                    });
+                });
+            }
+            
+            // Función para eliminar un ingrediente
+            function removeIngredient(id) {
+                // Encontrar el elemento antes de eliminarlo para animación
+                const elementToRemove = document.querySelector(`.delete-ingredient[data-id="${id}"]`).closest('.ingredient-item');
+                
+                // Aplicar animación de salida
+                elementToRemove.classList.remove('animate__fadeIn');
+                elementToRemove.classList.add('animate__fadeOut');
+                
+                // Esperar a que termine la animación antes de eliminar
+                setTimeout(() => {
+                    // Filtrar la lista de ingredientes
+                    ingredients = ingredients.filter(ingredient => ingredient.id !== id);
+                    // Actualizar la UI
+                    updateIngredientsList();
+                }, 300);
+            }
+            
+            // Manejador para limpiar todos los ingredientes
+            clearIngredientsBtn.addEventListener('click', function() {
+                if (ingredients.length === 0) return;
+                
+                if (confirm('¿Estás seguro de que deseas eliminar todos los ingredientes?')) {
+                    ingredients = [];
+                    // Eliminar del localStorage
+                    localStorage.removeItem('darkKitchenIngredients');
+                    // Actualizar UI
+                    updateIngredientsList();
+                    
+                    // Mostrar mensaje de confirmación
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-warning animate__animated animate__fadeIn py-2 mt-2';
+                    alertDiv.textContent = 'Todos los ingredientes han sido eliminados';
+                    ingredientsList.parentNode.appendChild(alertDiv);
+                    
+                    // Eliminar alerta después de 2 segundos
+                    setTimeout(() => {
+                        alertDiv.classList.remove('animate__fadeIn');
+                        alertDiv.classList.add('animate__fadeOut');
+                        setTimeout(() => alertDiv.remove(), 500);
+                    }, 1500);
+                }
+            });
+            
+            // Manejador para calcular el precio final
+            calculateBtn.addEventListener('click', function() {
+                if (ingredients.length === 0) {
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-danger animate__animated animate__shakeX py-2';
+                    alertDiv.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i> Debes agregar al menos un ingrediente';
+                    calculateBtn.insertAdjacentElement('afterend', alertDiv);
+                    
+                    setTimeout(() => {
+                        alertDiv.classList.add('animate__fadeOut');
+                        setTimeout(() => alertDiv.remove(), 500);
+                    }, 2000);
+                    return;
+                }
+                
+                // Obtener valores del formulario
+                const indirectCostsInput = document.getElementById('indirectCosts');
+                const marketingCostsInput = document.getElementById('marketingCosts');
+                const profitMarginInput = document.getElementById('profitMargin');
+                const dishNameInput = document.getElementById('dishName');
+                
+                const indirectCosts = parseFloat(indirectCostsInput.value);
+                const marketingCosts = parseFloat(marketingCostsInput.value);
+                const profitMargin = parseFloat(profitMarginInput.value);
+                const dishName = dishNameInput.value.trim();
+                
+                // Validar campos
+                let isValid = true;
+                
+                if (isNaN(indirectCosts) || indirectCosts < 0) {
+                    indirectCostsInput.classList.add('is-invalid');
+                    setTimeout(() => indirectCostsInput.classList.remove('is-invalid'), 3000);
+                    isValid = false;
+                }
+                
+                if (isNaN(marketingCosts) || marketingCosts < 0) {
+                    marketingCostsInput.classList.add('is-invalid');
+                    setTimeout(() => marketingCostsInput.classList.remove('is-invalid'), 3000);
+                    isValid = false;
+                }
+                
+                if (isNaN(profitMargin) || profitMargin <= 0 || profitMargin > 100) {
+                    profitMarginInput.classList.add('is-invalid');
+                    setTimeout(() => profitMarginInput.classList.remove('is-invalid'), 3000);
+                    isValid = false;
+                }
+                
+                if (!dishName) {
+                    dishNameInput.classList.add('is-invalid');
+                    setTimeout(() => dishNameInput.classList.remove('is-invalid'), 3000);
+                    isValid = false;
+                }
+                
+                if (!isValid) {
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-danger animate__animated animate__shakeX py-2';
+                    alertDiv.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i> Por favor completa todos los campos correctamente';
+                    calculateBtn.insertAdjacentElement('afterend', alertDiv);
+                    
+                    setTimeout(() => {
+                        alertDiv.classList.add('animate__fadeOut');
+                        setTimeout(() => alertDiv.remove(), 500);
+                    }, 2000);
+                    return;
+                }
+                
+                // Calcular el precio final
+                calculateFinalPrice(totalIngredientsCost, indirectCosts, marketingCosts, profitMargin, dishName);
+            });
+            
+            // Función para calcular el precio final
+            function calculateFinalPrice(ingredientsCost, indirectCosts, marketingCosts, profitMargin, dishName) {
+                // Calcular el costo total
+                const totalCost = ingredientsCost + indirectCosts + marketingCosts;
+                
+                // Calcular el factor de ganancia (1 + margen como decimal)
+                const profitFactor = 1 + (profitMargin / 100);
+                
+                // Calcular el precio final
+                const finalPrice = totalCost * profitFactor;
+                
+                // Calcular la ganancia
+                const profit = finalPrice - totalCost;
+                
+                // Mostrar los resultados
+                displayResults(dishName, ingredientsCost, indirectCosts, marketingCosts, totalCost, finalPrice, profit, profitMargin);
+                
+                // Generar imagen del platillo
+                generateDishImage(dishName, ingredients.map(ing => ing.name).join(', '));
+            }
+            
+            // Función para mostrar los resultados
+            function displayResults(dishName, ingredientsCost, indirectCosts, marketingCosts, totalCost, finalPrice, profit, profitMargin) {
+                // Mostrar nombre del platillo
+                document.getElementById('resultDishName').textContent = dishName;
+                
+                // Mostrar costos
+                document.getElementById('resultIngredients').textContent = `$${ingredientsCost.toFixed(2)}`;
+                document.getElementById('resultIndirect').textContent = `$${indirectCosts.toFixed(2)}`;
+                document.getElementById('resultMarketing').textContent = `$${marketingCosts.toFixed(2)}`;
+                document.getElementById('resultTotalCost').textContent = `$${totalCost.toFixed(2)}`;
+                document.getElementById('resultProfit').textContent = `$${profit.toFixed(2)}`;
+                
+                // Mostrar precio final
+                document.getElementById('finalPrice').textContent = `$${finalPrice.toFixed(2)}`;
+                
+                // Mostrar margen de ganancia
+                document.getElementById('resultMarginPercentage').textContent = `${profitMargin}%`;
+                
+                // Animar la barra de ganancia
+                const profitBar = document.getElementById('profitBar');
+                profitBar.style.width = '0%';
+                profitBar.textContent = '0%';
+                
+                setTimeout(() => {
+                    profitBar.style.width = `${profitMargin}%`;
+                    profitBar.textContent = `${profitMargin}%`;
+                }, 100);
+                
+                // Mostrar tarjeta de resultados con animación
+                resultCard.classList.add('animate__fadeIn');
+                resultCard.style.display = 'block';
+                
+                // Hacer scroll a los resultados
+                resultCard.scrollIntoView({ behavior: 'smooth' });
+            }
+            
+            // Función para generar imagen del platillo (simulada)
+            function generateDishImage(dishName, ingredientsList) {
+                // Mostrar spinner
+                const imageSpinner = document.getElementById('imageSpinner');
+                const generatedImage = document.getElementById('generatedImage');
+                
+                imageSpinner.style.display = 'block';
+                generatedImage.style.display = 'none';
+                
+                // Simular la generación de una imagen (en un caso real, esto podría ser una llamada a una API)
+                setTimeout(() => {
+                    // Crear una URL para la imagen de placeholder basada en el nombre del platillo
+                    const placeholderUrl = `/api/placeholder/500/300`;
+                    
+                    // Ocultar spinner y mostrar imagen
+                    imageSpinner.style.display = 'none';
+                    generatedImage.src = placeholderUrl;
+                    generatedImage.alt = `Imagen de ${dishName}`;
+                    generatedImage.style.display = 'block';
+                    generatedImage.classList.add('animate__animated', 'animate__fadeIn');
+                }, 1500);
+            }
+            
+            // Manejador para nueva calculación
+            newCalculationBtn.addEventListener('click', function() {
+                // Ocultar tarjeta de resultados
+                resultCard.style.display = 'none';
+                resultCard.classList.remove('animate__fadeIn');
+                
+                // Hacer scroll hacia arriba
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+    </script>
+</body>
+</html>
